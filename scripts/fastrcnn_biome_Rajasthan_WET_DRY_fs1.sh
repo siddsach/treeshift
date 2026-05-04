@@ -18,9 +18,9 @@
 
 set -euo pipefail
 
-REPO_ROOT="/scratch/groups/dlobell/aadityan/tree-distribution-shift"
-IMAGE_SIF="${REPO_ROOT}/detectron.sif"
-METADATA_CSV="/scratch/groups/dlobell/aadityan/tree-distribution-shift/../dataset/metadata.csv"
+REPO_ROOT="/scratch/groups/dlobell/siddsach/treeshift"
+IMAGE_SIF="${DETECTRON_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/detectron.sif}"
+METADATA_CSV="${METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}"
 
 CONFIG=biome_Rajasthan_train_WET__ood_DRY__fs1
 OUTPUT_DIR="${REPO_ROOT}/outputs/fastrcnn_biome_Rajasthan_WET_DRY_fs1_${SLURM_JOB_ID}"

@@ -18,9 +18,9 @@
 
 set -euo pipefail
 
-REPO_ROOT="/scratch/groups/dlobell/aadityan/tree-distribution-shift"
-IMAGE_SIF="${REPO_ROOT}/detectron.sif"
-METADATA_CSV="/scratch/groups/dlobell/aadityan/tree-distribution-shift/../dataset/metadata.csv"
+REPO_ROOT="/scratch/groups/dlobell/siddsach/treeshift"
+IMAGE_SIF="${DETECTRON_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/detectron.sif}"
+METADATA_CSV="${METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}"
 
 CONFIG=region_train_South__ood_North__fs1
 OUTPUT_DIR="${REPO_ROOT}/outputs/maskrcnn_pretrained_region_South_North_fs1_${SLURM_JOB_ID}"

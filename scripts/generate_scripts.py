@@ -60,7 +60,7 @@ MODELS = ["fastrcnn", "maskrcnn", "fastrcnn_pretrained", "maskrcnn_pretrained",
           "plaindetr_dinov3", "plaindetr_dinov3_7b16", "plaindetr_dinov3_sat",
           "plaindetr_resnet", "grounding_dino"]
 
-REPO_ROOT = "/scratch/groups/dlobell/aadityan/tree-distribution-shift"
+REPO_ROOT = "/scratch/groups/dlobell/siddsach/treeshift"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -355,8 +355,8 @@ def gen_fastrcnn(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/detectron.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
+IMAGE_SIF="${{DETECTRON_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/detectron.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
 
 CONFIG={config}
 OUTPUT_DIR="${{REPO_ROOT}}/outputs/fastrcnn_{short}_${{SLURM_JOB_ID}}"
@@ -421,8 +421,8 @@ def gen_maskrcnn(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/detectron.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
+IMAGE_SIF="${{DETECTRON_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/detectron.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
 
 CONFIG={config}
 OUTPUT_DIR="${{REPO_ROOT}}/outputs/maskrcnn_{short}_${{SLURM_JOB_ID}}"
@@ -488,8 +488,8 @@ def gen_fastrcnn_pretrained(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/detectron.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
+IMAGE_SIF="${{DETECTRON_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/detectron.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
 
 CONFIG={config}
 OUTPUT_DIR="${{REPO_ROOT}}/outputs/fastrcnn_pretrained_{short}_${{SLURM_JOB_ID}}"
@@ -556,8 +556,8 @@ def gen_maskrcnn_pretrained(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/detectron.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
+IMAGE_SIF="${{DETECTRON_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/detectron.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
 
 CONFIG={config}
 OUTPUT_DIR="${{REPO_ROOT}}/outputs/maskrcnn_pretrained_{short}_${{SLURM_JOB_ID}}"
@@ -623,9 +623,9 @@ def gen_plaindetr_dinov3(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/tree-shift.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
-DINO_WEIGHTS_ROOT="${{DINO_WEIGHTS_ROOT:-${{REPO_ROOT}}/../dino_weights}}"
+IMAGE_SIF="${{TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/tree-shift.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
+DINO_WEIGHTS_ROOT="${{DINO_WEIGHTS_ROOT:-/scratch/groups/dlobell/aadityan/dino_weights}}"
 DINOV3_REPO="${{DINOV3_REPO:-/opt/dinov3}}"
 DINO_WEIGHTS="${{DINO_WEIGHTS:-${{DINO_WEIGHTS_ROOT}}/dinov3_vits.pth}}"
 
@@ -736,9 +736,9 @@ def gen_plaindetr_dinov3_7b16(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/tree-shift.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
-DINO_WEIGHTS_ROOT="${{DINO_WEIGHTS_ROOT:-${{REPO_ROOT}}/../dino_weights}}"
+IMAGE_SIF="${{TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/tree-shift.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
+DINO_WEIGHTS_ROOT="${{DINO_WEIGHTS_ROOT:-/scratch/groups/dlobell/aadityan/dino_weights}}"
 DINOV3_REPO="${{DINOV3_REPO:-/opt/dinov3}}"
 DINO_WEIGHTS="${{DINO_WEIGHTS:-${{DINO_WEIGHTS_ROOT}}/dino_weights_7b16.pth}}"
 
@@ -850,9 +850,9 @@ def gen_plaindetr_dinov3_sat(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/tree-shift.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
-DINO_WEIGHTS_ROOT="${{DINO_WEIGHTS_ROOT:-${{REPO_ROOT}}/../dino_weights}}"
+IMAGE_SIF="${{TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/tree-shift.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
+DINO_WEIGHTS_ROOT="${{DINO_WEIGHTS_ROOT:-/scratch/groups/dlobell/aadityan/dino_weights}}"
 DINOV3_REPO="${{DINOV3_REPO:-/opt/dinov3}}"
 DINO_WEIGHTS="${{DINO_WEIGHTS:-${{DINO_WEIGHTS_ROOT}}/dino_weights_sat.pth}}"
 
@@ -964,8 +964,8 @@ def gen_plaindetr_resnet(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/tree-shift.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
+IMAGE_SIF="${{TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/tree-shift.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
 
 CONFIG={config}
 OUTPUT_DIR="${{REPO_ROOT}}/outputs/plaindetr_resnet_{short}_${{SLURM_JOB_ID}}"
@@ -1064,8 +1064,8 @@ def gen_grounding_dino(config: str, n: int) -> str:
 set -euo pipefail
 
 REPO_ROOT="{REPO_ROOT}"
-IMAGE_SIF="${{REPO_ROOT}}/tree-shift.sif"
-METADATA_CSV="{REPO_ROOT}/../dataset/metadata.csv"
+IMAGE_SIF="${{TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/tree-shift.sif}}"
+METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
 HF_CACHE_HOST="${{REPO_ROOT}}/.hf_cache/huggingface"
 HF_HOME="/workspace/.hf_cache/huggingface"
 PRETRAINED_WEIGHTS_REL="model_weights/grounding_dino_swin-t_pretrain_obj365_goldg_grit9m_v3det.pth"

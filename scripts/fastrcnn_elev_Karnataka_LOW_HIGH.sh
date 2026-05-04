@@ -18,9 +18,9 @@
 
 set -euo pipefail
 
-REPO_ROOT="/scratch/groups/dlobell/aadityan/tree-distribution-shift"
-IMAGE_SIF="${REPO_ROOT}/detectron.sif"
-METADATA_CSV="/scratch/groups/dlobell/aadityan/tree-distribution-shift/../dataset/metadata.csv"
+REPO_ROOT="/scratch/groups/dlobell/siddsach/treeshift"
+IMAGE_SIF="${DETECTRON_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/detectron.sif}"
+METADATA_CSV="${METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}"
 
 CONFIG=elev_Karnataka_train_LOW__ood_HIGH
 OUTPUT_DIR="${REPO_ROOT}/outputs/fastrcnn_elev_Karnataka_LOW_HIGH_${SLURM_JOB_ID}"

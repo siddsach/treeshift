@@ -18,10 +18,10 @@
 
 set -euo pipefail
 
-REPO_ROOT="/scratch/groups/dlobell/aadityan/tree-distribution-shift"
-IMAGE_SIF="${REPO_ROOT}/tree-shift.sif"
-METADATA_CSV="/scratch/groups/dlobell/aadityan/tree-distribution-shift/../dataset/metadata.csv"
-DINO_WEIGHTS_ROOT="${DINO_WEIGHTS_ROOT:-${REPO_ROOT}/../dino_weights}"
+REPO_ROOT="/scratch/groups/dlobell/siddsach/treeshift"
+IMAGE_SIF="${TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/tree-shift.sif}"
+METADATA_CSV="${METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}"
+DINO_WEIGHTS_ROOT="${DINO_WEIGHTS_ROOT:-/scratch/groups/dlobell/aadityan/dino_weights}"
 DINOV3_REPO="${DINOV3_REPO:-/opt/dinov3}"
 DINO_WEIGHTS="${DINO_WEIGHTS:-${DINO_WEIGHTS_ROOT}/dino_weights_7b16.pth}"
 

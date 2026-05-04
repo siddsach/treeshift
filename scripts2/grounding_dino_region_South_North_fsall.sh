@@ -18,9 +18,9 @@
 
 set -euo pipefail
 
-REPO_ROOT="/scratch/groups/dlobell/aadityan/tree-distribution-shift"
-IMAGE_SIF="${REPO_ROOT}/tree-shift.sif"
-METADATA_CSV="/scratch/groups/dlobell/aadityan/tree-distribution-shift/../dataset/metadata.csv"
+REPO_ROOT="/scratch/groups/dlobell/siddsach/treeshift"
+IMAGE_SIF="${TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-shift/tree-shift.sif}"
+METADATA_CSV="${METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}"
 HF_CACHE_HOST="${REPO_ROOT}/.hf_cache/huggingface"
 HF_HOME="/workspace/.hf_cache/huggingface"
 PRETRAINED_WEIGHTS_REL="model_weights/grounding_dino_swin-t_pretrain_obj365_goldg_grit9m_v3det.pth"
