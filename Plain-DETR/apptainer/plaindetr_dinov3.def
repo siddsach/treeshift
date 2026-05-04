@@ -1,0 +1,103 @@
+Bootstrap: docker
+From: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-devel
+
+%labels
+    Author Plain-DETR DinoV3
+
+%environment
+    export PYTHONUNBUFFERED=1
+    export PYTHONDONTWRITEBYTECODE=1
+    export PYTHONPATH=/opt/Plain-DETR:${PYTHONPATH}
+    export WANDB_MODE=disabled
+
+%post
+    set -e
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        git \
+        ca-certificates \
+        build-essential \
+        pkg-config \
+        python3-dev \
+        libglib2.0-0 \
+        libsm6 \
+        libxext6 \
+        libxrender1 \
+        libgl1 \
+        && rm -rf /var/lib/apt/lists/*
+
+    python -m pip install --upgrade pip setuptools wheel
+
+    conda install -y -c conda-forge "numpy<2" pycocotools
+    conda clean -afy
+
+    python -m pip install \
+        "numpy<2" \
+        tqdm \
+        scipy \
+        wandb \
+        timm==0.4.5 \
+        pillow \
+        opencv-python-headless \
+        matplotlib \
+        pyyaml \
+        termcolor \
+        torchmetrics \
+        einops
+
+    cd /opt
+    git clone --depth 1 https://github.com/facebookresearch/dinov3.git
+
+%files
+    . /opt/Plain-DETR
+
+%runscript
+    set -e
+
+    COCO_PATH=${COCO_PATH:-/data/coco}
+    DINOV3_REPO=${DINOV3_REPO:-/opt/dinov3}
+    DINOV3_WEIGHTS=${DINOV3_WEIGHTS:-/data/dino_weights.pth}
+    OUTPUT_DIR=${OUTPUT_DIR:-/data/output}
+
+    BATCH_SIZE=${BATCH_SIZE:-1}
+    NUM_WORKERS=${NUM_WORKERS:-4}
+    EPOCHS=${EPOCHS:-50}
+
+    cd /opt/Plain-DETR
+
+    exec python main.py \
+      --dataset_file coco \
+      --coco_path "${COCO_PATH}" \
+      --output_dir "${OUTPUT_DIR}" \
+      --device cuda \
+      --num_classes 1 \
+      --batch_size ${BATCH_SIZE} \
+      --num_workers ${NUM_WORKERS} \
+      --epochs ${EPOCHS} \
+      --lr 2e-4 \
+      --lr_backbone 0 \
+      --weight_decay 1e-4 \
+      --backbone dinov3 \
+      --dinov3_repo "${DINOV3_REPO}" \
+      --dinov3_model dinov3_vit7b16 \
+      --dinov3_weights "${DINOV3_WEIGHTS}" \
+      --layers_to_use 23 \
+      --num_feature_levels 1 \
+      --proposal_feature_levels 1 \
+      --proposal_in_stride 16 \
+      --proposal_tgt_strides 16 \
+      --add_transformer_encoder \
+      --num_encoder_layers 6 \
+      --norm_type pre_norm \
+      --hidden_dim 256 \
+      --dim_feedforward 2048 \
+      --nheads 8 \
+      --decoder_type global_rpe_decomp \
+      --decoder_rpe_type linear \
+      --decoder_rpe_hidden_dim 256 \
+      --two_stage \
+      --mixed_selection \
+      --with_box_refine \
+      --num_queries_one2one 100 \
+      --num_queries_one2many 0 \
+      --k_one2many 0

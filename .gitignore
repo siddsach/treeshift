@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual environments and local caches
+.venv/
+venv/
+env/
+.cache/
+.hf_cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs and scheduler output
+logs/
+scripts/logs/
+scripts2/logs/
+*.log
+*.out
+*.err
+slurm-*.out
+
+# Data and COCO exports
+data/
+dataset/
+datasets/
+coco_export/
+coco_out/
+annotations/
+images/
+example_images/
+
+# Model weights, checkpoints, and containers
+model_weights/
+weights/
+checkpoints/
+*.pth
+*.pt
+*.ckpt
+*.sif
+*.sqsh
+
+# Experiment outputs
+outputs/
+outputs_old/
+output/
+output2/
+final_outputs/
+plain_detr_output/
+output_grounding_dino/
+detectron_output/
+evaluation_output/
+per_result_json/
+per_result_old*/
+aggregate*/
+old_aggregate/
+lr_range_test/
+
+# Generated temporary comparison outputs
+tmp_generated_scripts/
+tmp/

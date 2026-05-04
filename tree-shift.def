@@ -1,0 +1,118 @@
+Bootstrap: docker
+From: nvidia/cuda:11.6.2-cudnn8-devel-ubuntu20.04
+
+%labels
+    Author tree-distribution-shift
+    Description Plain-DETR + GroundingDINO + MM-Grounding-DINO
+    Version 1.0
+
+%environment
+    export DEBIAN_FRONTEND=noninteractive
+    export PYTHONUNBUFFERED=1
+    export PYTHONDONTWRITEBYTECODE=1
+    export QT_QPA_PLATFORM=offscreen
+    export CUDA_HOME=/usr/local/cuda
+    export TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6+PTX"
+    export PYTHONPATH=/workspace:${PYTHONPATH}
+    export GROUNDING_DINO_DIR=/opt/GroundingDINO
+    export HF_HOME=/tmp/huggingface
+    export LD_LIBRARY_PATH=/usr/local/lib/python3.9/dist-packages/PyQt5/Qt5/lib:/usr/local/lib/python3.9/site-packages/PyQt5/Qt5/lib:${LD_LIBRARY_PATH}
+
+%post
+    set -e
+
+    export DEBIAN_FRONTEND=noninteractive
+    export PYTHONUNBUFFERED=1
+
+    # Python 3.9 via deadsnakes PPA
+    apt-get update && apt-get install -y --no-install-recommends \
+        software-properties-common \
+        && add-apt-repository -y ppa:deadsnakes/ppa \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends \
+        git wget ca-certificates \
+        python3.9 python3.9-venv python3.9-dev \
+        libglib2.0-0 libsm6 libxext6 libxrender1 libgl1-mesa-glx build-essential \
+        libqt5core5a libqt5gui5 libqt5widgets5 libxkbcommon0 \
+        && rm -rf /var/lib/apt/lists/*
+
+    ln -sf /usr/bin/python3.9 /usr/bin/python
+    wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py \
+        && python3.9 /tmp/get-pip.py
+    pip install --upgrade pip "setuptools<70" wheel
+
+    # PyTorch 1.13 + CUDA 11.6
+    pip install torch==1.13.1 torchvision==0.14.1 \
+        --index-url https://download.pytorch.org/whl/cu116
+
+    pip install "numpy<2"
+
+    # tree-distribution-shift (use git+https://... if private; set GH_TOKEN at build for private repos)
+    pip install tree-distribution-shift 2>/dev/null || \
+        pip install "git+https://github.com/aadityabuilds/tree-shift-package.git@main" 2>/dev/null || true
+
+    # Plain-DETR deps
+    pip install pycocotools tqdm cython scipy wandb timm==0.4.5
+    # PyQt5 provides libQt5Core-*.so.5.15 required by GroundingDINO/mmcv
+    pip install PyQt5
+
+    # transformers (before GroundingDINO)
+    pip install "transformers>=4.30,<4.46"
+
+    # GroundingDINO at /opt (survives volume mount over /workspace)
+    git clone https://github.com/IDEA-Research/GroundingDINO.git /opt/GroundingDINO
+    cd /opt/GroundingDINO
+    pip install --no-build-isolation -e .
+    cd /
+
+    pip install "numpy<2" --force-reinstall
+
+    # MMDetection
+    pip install opencv-python-headless
+    pip install mmengine
+    pip install mmcv==2.0.1 \
+        -f https://download.openmmlab.com/mmcv/dist/cu116/torch1.13/index.html
+    pip install mmdet==3.3.0
+
+    pip install "numpy<2" --force-reinstall
+
+    # Verify installs
+    python -c "import mmdet; from mmdet.apis import DetInferencer; print('mmdet OK')"
+    python -c "import groundingdino; print('GroundingDINO OK')"
+    python -c "import torch; import transformers; from transformers import BertModel; print('torch+bert OK')"
+
+    # Cache BERT weights
+    python -c "from transformers import BertModel, BertTokenizer; \
+        BertTokenizer.from_pretrained('bert-base-uncased'); \
+        BertModel.from_pretrained('bert-base-uncased'); \
+        print('bert-base-uncased cached')"
+
+    git config --global --add safe.directory /workspace
+
+    # DinoV3: clone pinned upstream commit, then patch for Python 3.9
+    DINOV3_COMMIT=31703e4cbf1ccb7c4a72daa1350405f86754b6d1
+    git clone https://github.com/facebookresearch/dinov3.git /opt/dinov3
+    cd /opt/dinov3
+    git checkout $DINOV3_COMMIT
+    cd /
+    python -c "
+import pathlib
+f = 'from __future__ import annotations'
+for p in pathlib.Path('/opt/dinov3').rglob('*.py'):
+    t = p.read_text()
+    if f not in t:
+        p.write_text(f + chr(10) + t)
+"
+    echo "DinoV3 patched for Python 3.9"
+
+%files
+    . /workspace
+
+%runscript
+    exec /bin/bash
+
+%test
+    python -c "import mmdet; from mmdet.apis import DetInferencer; print('mmdet OK')"
+    python -c "import groundingdino; print('GroundingDINO OK')"
+    python -c "from transformers import BertModel; print('transformers OK')"
+    echo "All tests passed"

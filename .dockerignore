@@ -1,0 +1,28 @@
+# Core dumps and large outputs (often root-owned, break build context)
+core
+core.*
+coco_export/
+plain_detr_output/
+output_grounding_dino/
+coco_out/
+outputs/
+dino_weights/
+*.pth
+*.pt
+*.safetensors
+*.bin
+
+# Git (not needed in image)
+.git
+.gitignore
+
+# Python / env
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env/
+
+# Misc
+*.log
+.DS_Store

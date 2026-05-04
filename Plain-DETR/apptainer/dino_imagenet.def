@@ -1,0 +1,28 @@
+Bootstrap: docker
+From: nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+
+%post
+    set -eux
+
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        python3.10 python3.10-venv python3-pip \
+        git \
+        libglib2.0-0 \
+        libsm6 libxext6 libxrender1 \
+        libtiff5 \
+        && rm -rf /var/lib/apt/lists/*
+
+    # Ensure "python" exists and points to py3.10
+    ln -sf /usr/bin/python3.10 /usr/local/bin/python
+    ln -sf /usr/bin/pip3 /usr/local/bin/pip || true
+
+    # Upgrade pip using the correct interpreter
+    /usr/bin/python3.10 -m pip install --upgrade pip
+
+    # Install PyTorch + torchvision CUDA 12.1 wheels
+    /usr/bin/python3.10 -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+%environment
+    export PYTHONUNBUFFERED=1
+    export OMP_NUM_THREADS=1
