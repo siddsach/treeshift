@@ -37,19 +37,19 @@ scripts2/logs/
 slurm-*.out
 
 # Data and COCO exports
-data/
-dataset/
-datasets/
-coco_export/
-coco_out/
-annotations/
-images/
-example_images/
+/data/
+/dataset/
+/datasets/
+/coco_export/
+/coco_out/
+/annotations/
+/images/
+/example_images/
 
 # Model weights, checkpoints, and containers
-model_weights/
-weights/
-checkpoints/
+/model_weights/
+/weights/
+/checkpoints/
 *.pth
 *.pt
 *.ckpt
@@ -57,20 +57,20 @@ checkpoints/
 *.sqsh
 
 # Experiment outputs
-outputs/
-outputs_old/
-output/
-output2/
-final_outputs/
-plain_detr_output/
-output_grounding_dino/
-detectron_output/
-evaluation_output/
-per_result_json/
-per_result_old*/
-aggregate*/
-old_aggregate/
-lr_range_test/
+/outputs/
+/outputs_old/
+/output/
+/output2/
+/final_outputs/
+/plain_detr_output/
+/output_grounding_dino/
+/detectron_output/
+/evaluation_output/
+/per_result_json/
+/per_result_old*/
+/aggregate*/
+/old_aggregate/
+/lr_range_test/
 
 # Generated temporary comparison outputs
 tmp_generated_scripts/

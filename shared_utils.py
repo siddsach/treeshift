@@ -92,10 +92,14 @@ def ensure_tree_shift_export(config, coco_dir=None):
 
     base = Path(coco_dir) / config
     train_ann = base / "train" / "annotations" / "instances_train.json"
+    id_test_ann = base / "id_test" / "annotations" / "instances_id_test.json"
+    val_ann = base / "val" / "annotations" / "instances_val.json"
     ood_test_ann = base / "ood_test" / "annotations" / "instances_ood_test.json"
     ood_train_ann = base / "ood_train" / "annotations" / "instances_ood_train.json"
 
-    if train_ann.exists() and ood_test_ann.exists() and ood_train_ann.exists():
+    if train_ann.exists() and (
+        (ood_test_ann.exists() and ood_train_ann.exists()) or id_test_ann.exists() or val_ann.exists()
+    ):
         print(f"tree_shift COCO export already exists at {base}")
     else:
         print(f"Downloading and exporting tree_shift data ...")
@@ -132,9 +136,11 @@ def ensure_tree_shift_export(config, coco_dir=None):
                 s for s in ["train", "id_test", "ood_train", "ood_test"]
                 if s in available_splits
             ]
-            if "train" not in requested_splits or "ood_test" not in requested_splits:
+            if "train" not in requested_splits or (
+                "ood_test" not in requested_splits and "id_test" not in requested_splits
+            ):
                 raise RuntimeError(
-                    f"Config '{config}' must contain 'train' and 'ood_test'. "
+                    f"Config '{config}' must contain 'train' and either 'ood_test' or 'id_test'. "
                     f"Available: {sorted(available_splits)}"
                 )
             print(f"  Export splits: {requested_splits}")
@@ -152,10 +158,10 @@ def ensure_tree_shift_export(config, coco_dir=None):
             text=True,
         )
         if export_proc.returncode != 0:
-            # Retry with minimal required splits
-            print(
-                "tree-shift export failed; retrying with ['train', 'ood_train', 'ood_test']."
-            )
+            # Retry with the legacy distribution-shift split set. ID-only
+            # configs such as india_random_80_20 should have succeeded above
+            # after split discovery because they do not expose ood_* splits.
+            print("tree-shift export failed; retrying with ['train', 'ood_train', 'ood_test'].")
             subprocess.check_call(
                 ["tree-shift", "export", "--config", config, "--out", str(coco_dir),
                  "--splits", "train", "ood_train", "ood_test"],

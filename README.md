@@ -24,6 +24,7 @@ This repository should not track raw imagery, COCO exports, metadata CSVs, model
 - `scripts2/`: canonical 1-GPU, 40-epoch Slurm scripts used as the reproducible launch surface.
 - `scripts/`: base generated scripts and generator source used to regenerate `scripts2/`.
 - `tools/data/`: dataset split/config generation and COCO export tooling.
+- `tools/analysis/`: post-hoc dataset summaries, covariate joins, and stratified metric tables.
 - `tools/verify_generated_scripts.py`: regenerates scripts in a temp directory and diffs them against committed scripts.
 
 ## Quick checks
@@ -60,3 +61,9 @@ sbatch scripts2/fastrcnn_pretrained_region_North_South.sh
 ```
 
 The Slurm scripts assume an HPC environment with Apptainer. DINOv3 scripts support `DINOV3_REPO`, `DINO_WEIGHTS_ROOT`, and `DINO_WEIGHTS` overrides; other data paths are documented in `DATA.md` and `REPRODUCIBILITY.md`.
+
+## Post-Hoc Analysis
+
+Training jobs should only train/evaluate models and write reusable outputs such
+as `per_image_results.json`. Dataset summaries, image/covariate analysis, and
+stratified tables are separate rerunnable commands under `tools/analysis/`.

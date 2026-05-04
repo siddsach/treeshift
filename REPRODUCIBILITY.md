@@ -44,10 +44,13 @@ Store these outside Git and document their exact paths, checksums, and download 
 Each model run should produce:
 
 - `eval_val/per_image_results.json`
-- `eval_ood_test/per_image_results.json`
+- `eval_ood_test/per_image_results.json` for distribution-shift configs
 - `eval_ood_train/per_image_results.json` when the split exists
 - `eval_summary.json`
 - optional `shift_analysis/` outputs
+
+The `india_random_80_20` baseline is ID-only and should produce `eval_val`
+without OOD evaluation or shift analysis.
 
 Use `scripts2/aggregate_results.py` to build cross-model summary tables from a curated output directory.
 

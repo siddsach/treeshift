@@ -54,6 +54,7 @@ CONFIGS = {
     "region_train_South__ood_North__fs10":         6035,
     "region_train_South__ood_North__fs100":        6125,
     "region_train_South__ood_North__fsall":       10784,   # was 12823
+    "india_random_80_20":                          10794,
 }
 
 MODELS = ["fastrcnn", "maskrcnn", "fastrcnn_pretrained", "maskrcnn_pretrained",
@@ -315,12 +316,34 @@ def _ood_train_flag(config: str) -> str:
     return "" if config.endswith("__fsall") else " --eval-ood-train"
 
 
+def _is_id_only_config(config: str) -> bool:
+    return config == "india_random_80_20"
+
+
+def _eval_flags(config: str) -> str:
+    if _is_id_only_config(config):
+        return " --eval-val"
+    return f" --eval-val --eval-ood{_ood_train_flag(config)}"
+
+
+ID_ONLY_DONE_BLOCK = """\
+# ----- 2. ID-only baseline -----
+# This config has no OOD split, so shift analysis is intentionally skipped.
+echo ""
+echo "Done. Outputs: ${OUTPUT_DIR}"
+"""
+
+
 def _shift_apptainer(config: str) -> str:
+    if _is_id_only_config(config):
+        return ID_ONLY_DONE_BLOCK
     return SHIFT_ANALYSIS_BLOCK_APPTAINER_FSALL if config.endswith("__fsall") \
         else SHIFT_ANALYSIS_BLOCK_APPTAINER
 
 
 def _shift_venv(config: str) -> str:
+    if _is_id_only_config(config):
+        return ID_ONLY_DONE_BLOCK
     return SHIFT_ANALYSIS_BLOCK_VENV_FSALL if config.endswith("__fsall") \
         else SHIFT_ANALYSIS_BLOCK_VENV
 
@@ -376,7 +399,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   python detectron_fastrcnn.py run \\
   --config "${{CONFIG}}" \\
-  --train --eval-val --eval-ood{_ood_train_flag(config)} \\
+  --train{_eval_flags(config)} \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --batch-size {bs} \\
   --max-iterations {itr} \\
@@ -442,7 +465,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   python detectron_maskrcnn.py run \\
   --config "${{CONFIG}}" \\
-  --train --eval-val --eval-ood{_ood_train_flag(config)} \\
+  --train{_eval_flags(config)} \\
   --eval-mode distshift \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --batch-size {bs} \\
@@ -509,7 +532,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   python detectron_fastrcnn.py run \\
   --config "${{CONFIG}}" \\
-  --train --eval-val --eval-ood{_ood_train_flag(config)} \\
+  --train{_eval_flags(config)} \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --batch-size {bs} \\
   --max-iterations {itr} \\
@@ -577,7 +600,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   python detectron_maskrcnn.py run \\
   --config "${{CONFIG}}" \\
-  --train --eval-val --eval-ood{_ood_train_flag(config)} \\
+  --train{_eval_flags(config)} \\
   --eval-mode distshift \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --batch-size {bs} \\
@@ -664,7 +687,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   torchrun --standalone --nproc_per_node=${{NUM_GPUS}} --master_port=${{MASTER_PORT}} plain_detr.py run \\
   --config "${{CONFIG}}" \\
-  --train --eval-val --eval-ood{_ood_train_flag(config)} \\
+  --train{_eval_flags(config)} \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --batch-size 2 \\
   --decoder_use_checkpoint \\
@@ -778,7 +801,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   torchrun --standalone --nproc_per_node=${{NUM_GPUS}} --master_port=${{MASTER_PORT}} plain_detr.py run \\
   --config "${{CONFIG}}" \\
-  --train --eval-val --eval-ood{_ood_train_flag(config)} \\
+  --train{_eval_flags(config)} \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --batch-size 2 \\
   --decoder_use_checkpoint \\
@@ -892,7 +915,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   torchrun --standalone --nproc_per_node=${{NUM_GPUS}} --master_port=${{MASTER_PORT}} plain_detr.py run \\
   --config "${{CONFIG}}" \\
-  --train --eval-val --eval-ood{_ood_train_flag(config)} \\
+  --train{_eval_flags(config)} \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --batch-size 2 \\
   --decoder_use_checkpoint \\
@@ -997,7 +1020,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   torchrun --standalone --nproc_per_node=${{NUM_GPUS}} --master_port=${{MASTER_PORT}} plain_detr.py run \\
   --config "${{CONFIG}}" \\
-  --train --eval-val --eval-ood{_ood_train_flag(config)} \\
+  --train{_eval_flags(config)} \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --batch-size 2 \\
   --decoder_use_checkpoint \\
@@ -1164,7 +1187,7 @@ apptainer exec --nv \\
   "${{IMAGE_SIF}}" \\
   python grounding_dino.py run \\
   --config "${{CONFIG}}" \\
-  --eval-val --eval-ood{_ood_train_flag(config)} \\
+  {_eval_flags(config).strip()} \\
   --model-path "${{CKPT}}" \\
   --output-dir "${{OUTPUT_DIR}}" \\
   --num-workers 4
