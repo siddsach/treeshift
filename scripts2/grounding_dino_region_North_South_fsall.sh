@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
-#SBATCH --time=18:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=logs/grounding_dino_region_North_South_fsall_%j.out
 #SBATCH --error=logs/grounding_dino_region_North_South_fsall_%j.err
 
@@ -129,42 +129,11 @@ if [[ $EVAL_ERR -ne 0 ]]; then
   exit $EVAL_ERR
 fi
 
-# ----- 2. Shift analysis (univariate + Shapley) -----
-# fsall config: ood_train is empty (all OOD moved to train).
-# Using eval_ood_test for shift analysis instead.
-ID_RESULTS="${OUTPUT_DIR}/eval_val/per_image_results.json"
-OOD_RESULTS="${OUTPUT_DIR}/eval_ood_test/per_image_results.json"
-SHIFT_OUT="${OUTPUT_DIR}/shift_analysis"
-
-if [[ ! -f "${ID_RESULTS}" ]] || [[ ! -f "${OOD_RESULTS}" ]]; then
-  echo "Skipping shift analysis: missing eval outputs."
-  exit 0
-fi
-
-if [[ ! -f "${METADATA_CSV}" ]]; then
-  echo "Skipping shift analysis: metadata not found at ${METADATA_CSV}"
-  exit 0
-fi
-
-echo ""
-echo "Running univariate + Shapley decomposition ..."
-apptainer exec --nv \
-  --bind "${REPO_ROOT}:/workspace" \
-  "${IMAGE_SIF}" \
-  python shift_analysis.py univariate \
-  --id-results "${ID_RESULTS}" \
-  --ood-results "${OOD_RESULTS}" \
-  --metadata "${METADATA_CSV}" \
-  --output-dir "${SHIFT_OUT}"
-
-apptainer exec --nv \
-  --bind "${REPO_ROOT}:/workspace" \
-  "${IMAGE_SIF}" \
-  python shift_analysis.py shapley \
-  --id-results "${ID_RESULTS}" \
-  --ood-results "${OOD_RESULTS}" \
-  --metadata "${METADATA_CSV}" \
-  --output-dir "${SHIFT_OUT}"
-
+# ----- 2. Post-hoc shift analysis -----
+# Shift analysis is intentionally not run inside training jobs.
+# Use saved per-image eval outputs for post-hoc analysis after jobs finish.
 echo ""
 echo "Done. Outputs: ${OUTPUT_DIR}"
+echo "Post-hoc shift inputs, when available:"
+echo "  ${OUTPUT_DIR}/eval_val/per_image_results.json"
+echo "  ${OUTPUT_DIR}/eval_ood_train/per_image_results.json"

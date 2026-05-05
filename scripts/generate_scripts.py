@@ -126,11 +126,11 @@ def time_limit(model: str, n: int) -> str:
         elif n < 15000: return "36:00:00"
         else:           return "48:00:00"
     elif model == "grounding_dino":
-        # 3-GPU: roughly 3× faster training + eval headroom
-        if n < 4000:    return "8:00:00"
-        elif n < 10000: return "12:00:00"
-        elif n < 20000: return "18:00:00"
-        else:           return "24:00:00"
+        # GroundingDINO evaluation is comparatively slow, especially when
+        # eval_ood_train is requested for post-hoc shift analysis.
+        if n < 4000:    return "12:00:00"
+        elif n < 15000: return "24:00:00"
+        else:           return "36:00:00"
     else:  # 1-GPU
         if n < 4000:    return "12:00:00"
         elif n < 10000: return "24:00:00"
@@ -333,19 +333,28 @@ echo ""
 echo "Done. Outputs: ${OUTPUT_DIR}"
 """
 
+POSTHOC_SHIFT_DONE_BLOCK = """\
+# ----- 2. Post-hoc shift analysis -----
+# Shift analysis is intentionally not run inside training jobs.
+# Use saved per-image eval outputs for post-hoc analysis after jobs finish.
+echo ""
+echo "Done. Outputs: ${OUTPUT_DIR}"
+echo "Post-hoc shift inputs, when available:"
+echo "  ${OUTPUT_DIR}/eval_val/per_image_results.json"
+echo "  ${OUTPUT_DIR}/eval_ood_train/per_image_results.json"
+"""
+
 
 def _shift_apptainer(config: str) -> str:
     if _is_id_only_config(config):
         return ID_ONLY_DONE_BLOCK
-    return SHIFT_ANALYSIS_BLOCK_APPTAINER_FSALL if config.endswith("__fsall") \
-        else SHIFT_ANALYSIS_BLOCK_APPTAINER
+    return POSTHOC_SHIFT_DONE_BLOCK
 
 
 def _shift_venv(config: str) -> str:
     if _is_id_only_config(config):
         return ID_ONLY_DONE_BLOCK
-    return SHIFT_ANALYSIS_BLOCK_VENV_FSALL if config.endswith("__fsall") \
-        else SHIFT_ANALYSIS_BLOCK_VENV
+    return POSTHOC_SHIFT_DONE_BLOCK
 
 
 def gen_fastrcnn(config: str, n: int) -> str:

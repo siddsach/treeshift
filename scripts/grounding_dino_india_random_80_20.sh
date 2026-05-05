@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=24
 #SBATCH --mem=128G
-#SBATCH --time=18:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=logs/grounding_dino_india_random_80_20_%j.out
 #SBATCH --error=logs/grounding_dino_india_random_80_20_%j.err
 
