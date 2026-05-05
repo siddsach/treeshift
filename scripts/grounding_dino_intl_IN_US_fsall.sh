@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=24
 #SBATCH --mem=192G
-#SBATCH --time=36:00:00
+#SBATCH --time=18:00:00
 #SBATCH --output=logs/grounding_dino_intl_IN_US_fsall_%j.out
 #SBATCH --error=logs/grounding_dino_intl_IN_US_fsall_%j.err
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=frcnn_intl_US_IN_fs1
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,7 +12,7 @@
 
 # -----------------------------------------------------------------------
 # Faster R-CNN: intl_train_US__ood_IN__fs1
-# 8924 train images, batch 20 (2 GPUs), 50 epochs = 22350 iterations.
+# 8924 train images, batch 8 (1 GPU), 50 epochs = 55800 iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -42,8 +42,8 @@ apptainer exec --nv \
   --config "${CONFIG}" \
   --train --eval-val --eval-ood --eval-ood-train \
   --output-dir "${OUTPUT_DIR}" \
-  --batch-size 20 \
-  --max-iterations 22350 \
+  --batch-size 8 \
+  --max-iterations 55800 \
   --early-stopping-patience 5
 
 RUN_ERR=$?

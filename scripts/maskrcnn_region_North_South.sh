@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=mrcnn_region_North_South
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,7 +12,7 @@
 
 # -----------------------------------------------------------------------
 # Mask R-CNN: region_train_North__ood_South
-# 6118 train images, batch 20 (2 GPUs), 50 epochs = 15300 iterations.
+# 6118 train images, batch 8 (1 GPU), 50 epochs = 38250 iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -43,8 +43,8 @@ apptainer exec --nv \
   --train --eval-val --eval-ood --eval-ood-train \
   --eval-mode distshift \
   --output-dir "${OUTPUT_DIR}" \
-  --batch-size 20 \
-  --max-iterations 15300 \
+  --batch-size 8 \
+  --max-iterations 38250 \
   --early-stopping-patience 5
 
 RUN_ERR=$?

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=mrcnn_pt_region_South_North_fs100
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,7 +12,7 @@
 
 # -----------------------------------------------------------------------
 # Mask R-CNN (COCO pretrained): region_train_South__ood_North__fs100
-# 6125 train images, batch 20 (2 GPUs), 50 epochs = 15350 iterations.
+# 6125 train images, batch 8 (1 GPU), 50 epochs = 38300 iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -43,8 +43,8 @@ apptainer exec --nv \
   --train --eval-val --eval-ood --eval-ood-train \
   --eval-mode distshift \
   --output-dir "${OUTPUT_DIR}" \
-  --batch-size 20 \
-  --max-iterations 15350 \
+  --batch-size 8 \
+  --max-iterations 38300 \
   --learning-rate 0.005 \
   --pretrained \
   --early-stopping-patience 5

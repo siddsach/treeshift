@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=frcnn_region_South_North_fsall
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,7 +12,7 @@
 
 # -----------------------------------------------------------------------
 # Faster R-CNN: region_train_South__ood_North__fsall
-# 10784 train images, batch 20 (2 GPUs), 50 epochs = 27000 iterations.
+# 10784 train images, batch 8 (1 GPU), 50 epochs = 67400 iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -42,8 +42,8 @@ apptainer exec --nv \
   --config "${CONFIG}" \
   --train --eval-val --eval-ood \
   --output-dir "${OUTPUT_DIR}" \
-  --batch-size 20 \
-  --max-iterations 27000 \
+  --batch-size 8 \
+  --max-iterations 67400 \
   --early-stopping-patience 5
 
 RUN_ERR=$?

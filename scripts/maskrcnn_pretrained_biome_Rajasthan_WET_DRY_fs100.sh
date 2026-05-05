@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=mrcnn_pt_biome_Rajasthan_WET_DRY_fs100
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,7 +12,7 @@
 
 # -----------------------------------------------------------------------
 # Mask R-CNN (COCO pretrained): biome_Rajasthan_train_WET__ood_DRY__fs100
-# 1814 train images, batch 16 (2 GPUs), 50 epochs = 5700 iterations.
+# 1814 train images, batch 8 (1 GPU), 50 epochs = 11350 iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -43,8 +43,8 @@ apptainer exec --nv \
   --train --eval-val --eval-ood --eval-ood-train \
   --eval-mode distshift \
   --output-dir "${OUTPUT_DIR}" \
-  --batch-size 16 \
-  --max-iterations 5700 \
+  --batch-size 8 \
+  --max-iterations 11350 \
   --learning-rate 0.005 \
   --pretrained \
   --early-stopping-patience 5

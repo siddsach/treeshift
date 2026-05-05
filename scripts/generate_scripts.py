@@ -102,13 +102,8 @@ def job_name(model: str, config: str) -> str:
 
 def batch_size(model: str, n: int) -> int:
     if model in ("fastrcnn", "maskrcnn", "fastrcnn_pretrained", "maskrcnn_pretrained"):
-        # 2 GPUs: doubled batch sizes (8→16, 10→20, 12→24); each divisible by 2
-        if n < 4000:
-            return 16
-        elif n < 12000:
-            return 20
-        else:
-            return 24
+        # Detectron's run command is single-process, so this is the per-GPU batch.
+        return 8
     elif model == "grounding_dino":
         return 2
     else:  # plain-detr (per GPU, 3 GPUs)
@@ -126,11 +121,8 @@ def time_limit(model: str, n: int) -> str:
         elif n < 15000: return "36:00:00"
         else:           return "48:00:00"
     elif model == "grounding_dino":
-        # GroundingDINO evaluation is comparatively slow, especially when
-        # eval_ood_train is requested for post-hoc shift analysis.
-        if n < 4000:    return "12:00:00"
-        elif n < 15000: return "24:00:00"
-        else:           return "36:00:00"
+        if n < 15000:   return "12:00:00"
+        else:           return "18:00:00"
     else:  # 1-GPU
         if n < 4000:    return "12:00:00"
         elif n < 10000: return "24:00:00"
@@ -146,7 +138,7 @@ def memory(model: str, n: int) -> str:
         if n < 5000:    return "96G"
         elif n < 15000: return "128G"
         else:           return "192G"
-    # 2-GPU models (fastrcnn/maskrcnn) — scaled up from 1-GPU
+    # Detectron models.
     if n < 5000:    return "64G"
     elif n < 15000: return "96G"
     else:           return "128G"
@@ -369,7 +361,7 @@ def gen_fastrcnn(config: str, n: int) -> str:
 #!/bin/bash
 #SBATCH --job-name={jname}
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -380,7 +372,7 @@ def gen_fastrcnn(config: str, n: int) -> str:
 
 # -----------------------------------------------------------------------
 # Faster R-CNN: {config}
-# {n} train images, batch {bs} (2 GPUs), 50 epochs = {itr} iterations.
+# {n} train images, batch {bs} (1 GPU), 50 epochs = {itr} iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -435,7 +427,7 @@ def gen_maskrcnn(config: str, n: int) -> str:
 #!/bin/bash
 #SBATCH --job-name={jname}
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -446,7 +438,7 @@ def gen_maskrcnn(config: str, n: int) -> str:
 
 # -----------------------------------------------------------------------
 # Mask R-CNN: {config}
-# {n} train images, batch {bs} (2 GPUs), 50 epochs = {itr} iterations.
+# {n} train images, batch {bs} (1 GPU), 50 epochs = {itr} iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -502,7 +494,7 @@ def gen_fastrcnn_pretrained(config: str, n: int) -> str:
 #!/bin/bash
 #SBATCH --job-name={jname}
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -513,7 +505,7 @@ def gen_fastrcnn_pretrained(config: str, n: int) -> str:
 
 # -----------------------------------------------------------------------
 # Faster R-CNN (COCO pretrained): {config}
-# {n} train images, batch {bs} (2 GPUs), 50 epochs = {itr} iterations.
+# {n} train images, batch {bs} (1 GPU), 50 epochs = {itr} iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -570,7 +562,7 @@ def gen_maskrcnn_pretrained(config: str, n: int) -> str:
 #!/bin/bash
 #SBATCH --job-name={jname}
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -581,7 +573,7 @@ def gen_maskrcnn_pretrained(config: str, n: int) -> str:
 
 # -----------------------------------------------------------------------
 # Mask R-CNN (COCO pretrained): {config}
-# {n} train images, batch {bs} (2 GPUs), 50 epochs = {itr} iterations.
+# {n} train images, batch {bs} (1 GPU), 50 epochs = {itr} iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 

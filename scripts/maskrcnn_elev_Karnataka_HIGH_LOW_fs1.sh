@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=mrcnn_elev_Karnataka_HIGH_LOW_fs1
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,7 +12,7 @@
 
 # -----------------------------------------------------------------------
 # Mask R-CNN: elev_Karnataka_train_HIGH__ood_LOW__fs1
-# 2352 train images, batch 16 (2 GPUs), 50 epochs = 7350 iterations.
+# 2352 train images, batch 8 (1 GPU), 50 epochs = 14700 iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -43,8 +43,8 @@ apptainer exec --nv \
   --train --eval-val --eval-ood --eval-ood-train \
   --eval-mode distshift \
   --output-dir "${OUTPUT_DIR}" \
-  --batch-size 16 \
-  --max-iterations 7350 \
+  --batch-size 8 \
+  --max-iterations 14700 \
   --early-stopping-patience 5
 
 RUN_ERR=$?

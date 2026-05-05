@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=frcnn_biome_Rajasthan_DRY_WET_fs100
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,7 +12,7 @@
 
 # -----------------------------------------------------------------------
 # Faster R-CNN: biome_Rajasthan_train_DRY__ood_WET__fs100
-# 2034 train images, batch 16 (2 GPUs), 50 epochs = 6400 iterations.
+# 2034 train images, batch 8 (1 GPU), 50 epochs = 12750 iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -42,8 +42,8 @@ apptainer exec --nv \
   --config "${CONFIG}" \
   --train --eval-val --eval-ood --eval-ood-train \
   --output-dir "${OUTPUT_DIR}" \
-  --batch-size 16 \
-  --max-iterations 6400 \
+  --batch-size 8 \
+  --max-iterations 12750 \
   --early-stopping-patience 5
 
 RUN_ERR=$?

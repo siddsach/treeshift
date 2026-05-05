@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=mrcnn_pt_intl_US_IN_fsall
 #SBATCH --partition=serc
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,7 +12,7 @@
 
 # -----------------------------------------------------------------------
 # Mask R-CNN (COCO pretrained): intl_train_US__ood_IN__fsall
-# 18367 train images, batch 24 (2 GPUs), 50 epochs = 38300 iterations.
+# 18367 train images, batch 8 (1 GPU), 50 epochs = 114800 iterations.
 # Early stopping: patience 5 epochs. train + eval ID + eval OOD + SHIFT.
 # -----------------------------------------------------------------------
 
@@ -43,8 +43,8 @@ apptainer exec --nv \
   --train --eval-val --eval-ood \
   --eval-mode distshift \
   --output-dir "${OUTPUT_DIR}" \
-  --batch-size 24 \
-  --max-iterations 38300 \
+  --batch-size 8 \
+  --max-iterations 114800 \
   --learning-rate 0.005 \
   --pretrained \
   --early-stopping-patience 5
