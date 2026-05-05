@@ -419,7 +419,7 @@ def create_trainer_config(num_classes=1, batch_size=4, learning_rate=0.0002,
         print(f"Using custom config file: {config_file}")
     else:
         # Use Mask R-CNN for instance segmentation (bounding box + masks)
-        _config_yaml = os.path.join(os.path.dirname(os.path.abspath(__file__)), "detectron2", "configs", "COCO-InstanceSegmentation", "mask_rcnn_R_50_FPN_3x.yaml")
+        _config_yaml = model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
         cfg.merge_from_file(_config_yaml)
         if pretrained:
             cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
@@ -526,7 +526,7 @@ def create_predictor(model_path, num_classes=1, score_threshold=0.7, config_file
     if config_file and os.path.exists(config_file):
         cfg.merge_from_file(config_file)
     else:
-        _config_yaml = os.path.join(os.path.dirname(os.path.abspath(__file__)), "detectron2", "configs", "COCO-InstanceSegmentation", "mask_rcnn_R_50_FPN_3x.yaml")
+        _config_yaml = model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
         cfg.merge_from_file(_config_yaml)
     
     cfg.MODEL.WEIGHTS = model_path
@@ -1331,7 +1331,7 @@ def learning_rate_range_test(train_annotations, train_images,
     
     # Create base config
     cfg = get_cfg()
-    _config_yaml = os.path.join(os.path.dirname(os.path.abspath(__file__)), "detectron2", "configs", "COCO-InstanceSegmentation", "mask_rcnn_R_50_FPN_3x.yaml")
+    _config_yaml = model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
     cfg.merge_from_file(_config_yaml)
     cfg.MODEL.WEIGHTS = ""  # train from scratch
 
