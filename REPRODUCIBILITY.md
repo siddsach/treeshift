@@ -23,7 +23,7 @@ Container builds clone `facebookresearch/dinov3` at commit `31703e4cbf1ccb7c4a72
 
 Plain-DETR DINOv3 scripts resolve weights through `DINO_WEIGHTS_ROOT` and `DINO_WEIGHTS`:
 
-- `plaindetr_dinov3`: `${DINO_WEIGHTS_ROOT}/dinov3_vits.pth` unless `DINO_WEIGHTS` is set.
+- `plaindetr_dinov3`: `${DINO_WEIGHTS_ROOT}/dinov3_vits16_pretrain_lvd1689m-08c60483.pth` unless `DINO_WEIGHTS` is set. This must be the official DINOv3 ViT-S/16 LVD-1689M checkpoint and is paired with `--dinov3_model dinov3_vits16`.
 - `plaindetr_dinov3_7b16`: `${DINO_WEIGHTS_ROOT}/dino_weights_7b16.pth` unless `DINO_WEIGHTS` is set.
 - `plaindetr_dinov3_sat`: `${DINO_WEIGHTS_ROOT}/dino_weights_sat.pth` unless `DINO_WEIGHTS` is set.
 

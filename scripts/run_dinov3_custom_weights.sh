@@ -23,7 +23,7 @@ IMAGE_SIF="${REPO_ROOT}/tree-shift.sif"
 DINO_WEIGHTS_DIR="${REPO_ROOT}/../dino_weights"
 WEIGHTS_7B16="${DINO_WEIGHTS_DIR}/dino_weights_7b16.pth"
 WEIGHTS_SAT="${DINO_WEIGHTS_DIR}/dino_weights_sat.pth"
-WEIGHTS_VITS="${DINO_WEIGHTS_DIR}/dinov3_vits.pth"
+WEIGHTS_VITS="${DINO_WEIGHTS_DIR}/dinov3_vits16_pretrain_lvd1689m-08c60483.pth"
 
 COMMAND="${1:-probe}"
 

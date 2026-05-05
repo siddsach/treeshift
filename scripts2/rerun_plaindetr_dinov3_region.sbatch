@@ -35,7 +35,7 @@ apptainer exec --nv \
   --backbone dinov3 \
   --dinov3_repo /opt/dinov3 \
   --dinov3_model dinov3_vits16 \
-  --dinov3_weights "/scratch/groups/dlobell/aadityan/dino_weights/dinov3_vits.pth" \
+  --dinov3_weights "/scratch/groups/dlobell/aadityan/dino_weights/dinov3_vits16_pretrain_lvd1689m-08c60483.pth" \
   --layers_to_use 3 6 9 11 \
   --num_feature_levels 1 \
   --proposal_feature_levels 1 \

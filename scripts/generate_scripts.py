@@ -650,7 +650,7 @@ IMAGE_SIF="${{TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution
 METADATA_CSV="${{METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}}"
 DINO_WEIGHTS_ROOT="${{DINO_WEIGHTS_ROOT:-/scratch/groups/dlobell/aadityan/dino_weights}}"
 DINOV3_REPO="${{DINOV3_REPO:-/opt/dinov3}}"
-DINO_WEIGHTS="${{DINO_WEIGHTS:-${{DINO_WEIGHTS_ROOT}}/dinov3_vits.pth}}"
+DINO_WEIGHTS="${{DINO_WEIGHTS:-${{DINO_WEIGHTS_ROOT}}/dinov3_vits16_pretrain_lvd1689m-08c60483.pth}}"
 
 CONFIG={config}
 OUTPUT_DIR="${{REPO_ROOT}}/outputs/plaindetr_dinov3_{short}_${{SLURM_JOB_ID}}"
@@ -665,7 +665,9 @@ if [[ ! -f "${{IMAGE_SIF}}" ]]; then
 fi
 
 if [[ ! -f "${{DINO_WEIGHTS}}" ]]; then
-  echo "ERROR: DinoV3 ViT-S weights not found: ${{DINO_WEIGHTS}}"
+  echo "ERROR: DinoV3 ViT-S/16 LVD-1689M weights not found: ${{DINO_WEIGHTS}}"
+  echo "Expected official checkpoint for --dinov3_model dinov3_vits16."
+  echo "Download: wget -O ${{DINO_WEIGHTS}} https://dl.fbaipublicfiles.com/dinov3/dinov3_vits16/dinov3_vits16_pretrain_lvd1689m-08c60483.pth"
   exit 1
 fi
 
@@ -1225,13 +1227,13 @@ def main():
             content = GENERATORS[model](config, n_images)
             fname   = script_filename(model, config)
             fpath   = os.path.join(script_dir, fname)
-            with open(fpath, "w") as f:
+            with open(fpath, "w", encoding="utf-8") as f:
                 f.write(content)
             os.chmod(fpath, 0o755)
             generated += 1
 
     print(f"Generated {generated} scripts in {script_dir}/")
-    print(f"  {len(CONFIGS)} configs × {len(MODELS)} models = {generated}")
+    print(f"  {len(CONFIGS)} configs x {len(MODELS)} models = {generated}")
 
 
 if __name__ == "__main__":

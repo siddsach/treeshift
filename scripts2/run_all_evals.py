@@ -32,7 +32,7 @@ from pathlib import Path
 REPO_ROOT         = "/scratch/groups/dlobell/aadityan/tree-distribution-shift"
 DETECTRON_SIF     = f"{REPO_ROOT}/detectron.sif"
 TREESHIFT_SIF     = f"{REPO_ROOT}/tree-shift.sif"
-DINO_WEIGHTS_VITS = "/scratch/groups/dlobell/aadityan/dino_weights/dinov3_vits.pth"
+DINO_WEIGHTS_VITS = "/scratch/groups/dlobell/aadityan/dino_weights/dinov3_vits16_pretrain_lvd1689m-08c60483.pth"
 DINO_WEIGHTS_SAT  = "/scratch/groups/dlobell/aadityan/dino_weights/dino_weights_sat.pth"
 DINO_WEIGHTS_7B16 = "/scratch/groups/dlobell/aadityan/dino_weights/dino_weights_7b16.pth"
 

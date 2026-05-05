@@ -23,7 +23,7 @@ IMAGE_SIF="${TREE_SHIFT_SIF:-/scratch/groups/dlobell/aadityan/tree-distribution-
 METADATA_CSV="${METADATA_CSV:-/scratch/groups/dlobell/aadityan/dataset/metadata.csv}"
 DINO_WEIGHTS_ROOT="${DINO_WEIGHTS_ROOT:-/scratch/groups/dlobell/aadityan/dino_weights}"
 DINOV3_REPO="${DINOV3_REPO:-/opt/dinov3}"
-DINO_WEIGHTS="${DINO_WEIGHTS:-${DINO_WEIGHTS_ROOT}/dinov3_vits.pth}"
+DINO_WEIGHTS="${DINO_WEIGHTS:-${DINO_WEIGHTS_ROOT}/dinov3_vits16_pretrain_lvd1689m-08c60483.pth}"
 
 CONFIG=intl_train_US__ood_IN__fs10
 OUTPUT_DIR="${REPO_ROOT}/outputs/plaindetr_dinov3_intl_US_IN_fs10_1gpu40ep_${SLURM_JOB_ID}"
@@ -38,7 +38,9 @@ if [[ ! -f "${IMAGE_SIF}" ]]; then
 fi
 
 if [[ ! -f "${DINO_WEIGHTS}" ]]; then
-  echo "ERROR: DinoV3 ViT-S weights not found: ${DINO_WEIGHTS}"
+  echo "ERROR: DinoV3 ViT-S/16 LVD-1689M weights not found: ${DINO_WEIGHTS}"
+  echo "Expected official checkpoint for --dinov3_model dinov3_vits16."
+  echo "Download: wget -O ${DINO_WEIGHTS} https://dl.fbaipublicfiles.com/dinov3/dinov3_vits16/dinov3_vits16_pretrain_lvd1689m-08c60483.pth"
   exit 1
 fi
 

@@ -78,12 +78,12 @@ def main():
         src = os.path.join(SCRIPTS_DIR, fname)
         dst = os.path.join(SCRIPTS2_DIR, fname)
 
-        with open(src) as f:
+        with open(src, encoding="utf-8") as f:
             content = f.read()
 
         new_content = transform(content, is_gdino)
 
-        with open(dst, "w") as f:
+        with open(dst, "w", encoding="utf-8") as f:
             f.write(new_content)
 
         # preserve executable bit
