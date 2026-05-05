@@ -7,7 +7,10 @@ Data is loaded via the ``tree_shift`` pip package (>= 0.2.0).
 """
 
 import os
+import csv
 import json
+import random
+import shutil
 import subprocess
 import numpy as np
 from pathlib import Path
@@ -15,6 +18,116 @@ from collections import defaultdict
 from math import factorial
 
 _DEFAULT_COCO_EXPORT_DIR = os.path.join(".", "coco_export")
+_DEFAULT_LOCAL_DATA_ROOT = "/scratch/groups/dlobell/aadityan/dataset"
+
+
+def _split_pool(items, train_ratio, seed):
+    rng = random.Random(seed)
+    items = list(items)
+    rng.shuffle(items)
+    n_train = int(round(train_ratio * len(items)))
+    return items[:n_train], items[n_train:]
+
+
+def _link_or_copy_image(src, dst):
+    if dst.exists():
+        return
+    try:
+        os.link(src, dst)
+    except OSError:
+        shutil.copy2(src, dst)
+
+
+def _export_coco_split_from_master(coco, filenames, images_root, out_dir, split_name):
+    images_dir = out_dir / split_name / "images"
+    ann_dir = out_dir / split_name / "annotations"
+    images_dir.mkdir(parents=True, exist_ok=True)
+    ann_dir.mkdir(parents=True, exist_ok=True)
+
+    image_by_filename = {img["file_name"]: img for img in coco.get("images", [])}
+    selected_images = []
+    selected_image_ids = set()
+    missing = []
+    for filename in filenames:
+        img = image_by_filename.get(filename)
+        src = images_root / filename
+        if img is None or not src.exists():
+            missing.append(filename)
+            continue
+        selected_images.append(dict(img))
+        selected_image_ids.add(int(img["id"]))
+        _link_or_copy_image(src, images_dir / filename)
+
+    if missing:
+        preview = ", ".join(missing[:5])
+        raise RuntimeError(
+            f"Could not export {len(missing)} images for split '{split_name}'. "
+            f"Examples: {preview}"
+        )
+
+    annotations = []
+    ann_id = 1
+    for ann in coco.get("annotations", []):
+        if int(ann["image_id"]) not in selected_image_ids:
+            continue
+        row = dict(ann)
+        row["id"] = ann_id
+        ann_id += 1
+        annotations.append(row)
+
+    split_coco = {
+        "info": coco.get("info", {}),
+        "licenses": coco.get("licenses", []),
+        "images": selected_images,
+        "annotations": annotations,
+        "categories": coco.get("categories", []),
+    }
+    ann_path = ann_dir / f"instances_{split_name}.json"
+    with ann_path.open("w") as f:
+        json.dump(split_coco, f)
+    print(f"[local {split_name}] images={len(selected_images)} annotations={len(annotations)}")
+
+
+def _export_local_india_random_80_20(coco_dir):
+    """Build the unpublished India-wide fixed split from local source data."""
+    data_root = Path(os.environ.get("TREE_SHIFT_LOCAL_DATA_ROOT", _DEFAULT_LOCAL_DATA_ROOT))
+    metadata_path = data_root / "metadata.csv"
+    annotations_path = data_root / "world_annotations.json"
+    images_root = data_root / "world_images"
+    for path in (metadata_path, annotations_path, images_root):
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Local india_random_80_20 export requires {path}. "
+                "Set TREE_SHIFT_LOCAL_DATA_ROOT to the dataset root if needed."
+            )
+
+    with metadata_path.open(newline="") as f:
+        reader = csv.DictReader(f)
+        required = {"filename", "country"}
+        missing = required - set(reader.fieldnames or [])
+        if missing:
+            raise RuntimeError(f"metadata.csv missing required columns: {sorted(missing)}")
+        india_files = sorted(row["filename"] for row in reader if row.get("country") == "India")
+
+    if len(india_files) < 10:
+        raise RuntimeError(f"india_random_80_20 has too few India images: {len(india_files)}")
+
+    train_files, id_test_files = _split_pool(india_files, 0.8, 42)
+    split_map = {
+        "train": sorted(train_files),
+        "id_test": sorted(id_test_files),
+    }
+
+    print(f"Building local india_random_80_20 COCO export from {data_root}")
+    print(f"  train={len(split_map['train'])} id_test={len(split_map['id_test'])}")
+    with annotations_path.open() as f:
+        coco = json.load(f)
+
+    out_dir = Path(coco_dir) / "india_random_80_20"
+    for split_name, filenames in split_map.items():
+        _export_coco_split_from_master(coco, filenames, images_root, out_dir, split_name)
+
+    print(f"Local india_random_80_20 COCO export written to: {out_dir}")
 
 
 def resolve_coco_paths(coco_dir, config_name):
@@ -158,15 +271,19 @@ def ensure_tree_shift_export(config, coco_dir=None):
             text=True,
         )
         if export_proc.returncode != 0:
-            # Retry with the legacy distribution-shift split set. ID-only
-            # configs such as india_random_80_20 should have succeeded above
-            # after split discovery because they do not expose ood_* splits.
-            print("tree-shift export failed; retrying with ['train', 'ood_train', 'ood_test'].")
-            subprocess.check_call(
-                ["tree-shift", "export", "--config", config, "--out", str(coco_dir),
-                 "--splits", "train", "ood_train", "ood_test"],
-                env=env,
-            )
+            if config == "india_random_80_20":
+                print(
+                    "tree-shift export does not expose india_random_80_20; "
+                    "building it from local source data."
+                )
+                _export_local_india_random_80_20(coco_dir)
+            else:
+                print("tree-shift export failed; retrying with ['train', 'ood_train', 'ood_test'].")
+                subprocess.check_call(
+                    ["tree-shift", "export", "--config", config, "--out", str(coco_dir),
+                     "--splits", "train", "ood_train", "ood_test"],
+                    env=env,
+                )
         print("Export complete.")
 
     # Ensure a 'val' split always exists.  New dataset configs expose id_test
