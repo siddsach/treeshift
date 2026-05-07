@@ -294,7 +294,7 @@ def evaluate_split_zeroshot(
 def _build_mmdet_cfg(
     data_root, output_dir, train_ann_file, train_img_dir, val_ann_file, val_img_dir,
     epochs=20, batch_size=4, lr=0.0001, num_workers=2, pretrained_weights=None,
-    early_stopping_patience=0, gradient_checkpointing=False,
+    early_stopping_patience=0, gradient_checkpointing=False, train_val_interval=0,
 ):
     """Load the shipped config and override data paths / hyper-parameters."""
     cfg_path = os.path.join(_CONFIG_DIR, "mm_grounding_dino_tree.py")
@@ -324,6 +324,12 @@ def _build_mmdet_cfg(
     cfg.val_evaluator.ann_file = val_ann_file
     cfg.test_evaluator.ann_file = val_ann_file
 
+    tree_metainfo = dict(classes=("tree",), palette=[(34, 139, 34)])
+    cfg.train_dataloader.dataset.metainfo = tree_metainfo
+    cfg.val_dataloader.dataset.metainfo = tree_metainfo
+    cfg.test_dataloader.dataset.metainfo = tree_metainfo
+    cfg.model.bbox_head.num_classes = 1
+
     # ── Hyper-parameters ──────────────────────────────────────────────────
     cfg.train_dataloader.batch_size = batch_size
     cfg.train_dataloader.num_workers = num_workers
@@ -338,6 +344,17 @@ def _build_mmdet_cfg(
     cfg.param_scheduler[0].milestones = [max(1, int(epochs * 0.75))]
     if pretrained_weights:
         cfg.load_from = pretrained_weights
+
+    # MMDetection's internal CocoMetric consumes GroundingDINO token labels
+    # directly. With our one-class tree dataset that can produce label indices
+    # outside cat_ids and crash during train-time validation. We do unified
+    # post-training evaluation below, so default to skipping internal val.
+    if train_val_interval and train_val_interval > 0:
+        cfg.train_cfg.val_interval = int(train_val_interval)
+    else:
+        cfg.train_cfg.val_interval = epochs + 1
+        cfg.default_hooks.checkpoint.save_best = None
+        cfg.default_hooks.checkpoint.save_last = True
 
     # ── Gradient checkpointing (saves activation memory at ~15% speed cost)
     if gradient_checkpointing:
@@ -367,6 +384,7 @@ def _build_mmdet_cfg(
 def train_grounding_dino(
     paths, output_dir, epochs=20, batch_size=4, lr=0.0001, num_workers=2,
     pretrained_weights=None, early_stopping_patience=0, gradient_checkpointing=False,
+    train_val_interval=0,
 ):
     """Fine-tune MM-Grounding-DINO on tree-shift COCO data.
 
@@ -392,6 +410,7 @@ def train_grounding_dino(
         pretrained_weights=pretrained_weights,
         early_stopping_patience=early_stopping_patience,
         gradient_checkpointing=gradient_checkpointing,
+        train_val_interval=train_val_interval,
     )
 
     runner = Runner.from_cfg(cfg)
@@ -601,6 +620,8 @@ def main():
                             help="[train] Batch size (default: 4)")
     run_parser.add_argument("--lr", type=float, default=0.0001,
                             help="[train] Learning rate (default: 0.0001)")
+    run_parser.add_argument("--train-val-interval", type=int, default=0,
+                            help="[train] MMDetection validation interval in epochs (0=disabled; post-training eval still runs).")
 
     # ── Common ────────────────────────────────────────────────────────────
     run_parser.add_argument("--score-threshold", type=float, default=0.3,
@@ -679,6 +700,7 @@ def main():
             pretrained_weights=args.pretrained_weights,
             early_stopping_patience=getattr(args, 'early_stopping_patience', 0),
             gradient_checkpointing=getattr(args, 'gradient_checkpointing', False),
+            train_val_interval=getattr(args, 'train_val_interval', 0),
         )
         print(f"Training complete. Best checkpoint: {checkpoint_path}")
 
