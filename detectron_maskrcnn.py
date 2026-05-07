@@ -914,7 +914,8 @@ def generate_eval_summary_table(all_results, config_name, output_path, model_typ
     print(f"Evaluation summary table saved to: {output_path}")
 
 
-def evaluate_model(predictor, dataset_name="test", output_dir="./detectron_output"):
+def evaluate_model(predictor, dataset_name="test", output_dir="./detectron_output",
+                   score_threshold=None):
     """Evaluate model on test dataset using COCO metrics + unified per-image eval."""
     
     if not DETECTRON2_AVAILABLE:
@@ -981,6 +982,10 @@ def evaluate_model(predictor, dataset_name="test", output_dir="./detectron_outpu
         instances = outputs["instances"].to("cpu")
         pred_boxes_xyxy = instances.pred_boxes.tensor.numpy()
         scores = instances.scores.numpy()
+        if score_threshold is not None:
+            keep = scores >= float(score_threshold)
+            pred_boxes_xyxy = pred_boxes_xyxy[keep]
+            scores = scores[keep]
 
         order = np.argsort(-scores)
         pred_xywh = []
@@ -1556,7 +1561,9 @@ def main():
     run_parser.add_argument('--max-iterations', type=int, default=90000, help='Maximum training iterations')
     run_parser.add_argument('--output-dir', default='./output', help='Output directory for model checkpoints')
     run_parser.add_argument('--config-file', default=None, help='Custom Detectron2 config file')
-    run_parser.add_argument('--score-threshold', type=float, default=0.7, help='Confidence threshold for evaluation')
+    run_parser.add_argument('--score-threshold', type=float, default=0.7, help='Confidence threshold for tree/count metrics')
+    run_parser.add_argument('--coco-score-threshold', type=float, default=0.05,
+                            help='Low confidence threshold for COCO AP prediction generation')
     run_parser.add_argument('--resume', action='store_true', default=True, help='Resume from checkpoint')
     run_parser.add_argument('--early-stopping-patience', type=int, default=0,
                             help='Early stopping patience in epochs (0=disabled). Requires val split.')
@@ -1701,7 +1708,7 @@ def main():
             predictor = create_predictor(
                 model_path=model_path,
                 num_classes=args.num_classes,
-                score_threshold=args.score_threshold,
+                score_threshold=args.coco_score_threshold,
                 config_file=args.config_file,
             )
             if not predictor:
@@ -1720,7 +1727,10 @@ def main():
 
                 try:
                     eval_output = os.path.join(args.output_dir, f"eval_{split_name}")
-                    results = evaluate_model(predictor, split_name, eval_output)
+                    results = evaluate_model(
+                        predictor, split_name, eval_output,
+                        score_threshold=args.score_threshold,
+                    )
                     if results:
                         all_results[split_name] = results
                 except Exception as exc:
